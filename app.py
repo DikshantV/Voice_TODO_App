@@ -15,7 +15,8 @@ Main Pipeline:
 5. Repository -> Persistence (<10ms)
 6. UI -> Refresh and display results
 """
-
+import os
+from dotenv import load_dotenv
 import streamlit as st
 from src.repository import TaskRepository
 from src.audio_service import AudioService
@@ -23,6 +24,9 @@ from src.llm_service import LLMService
 from src.task_service import TaskService
 from src.ui_components import render_task_item, render_empty_state, render_debug_panel
 from src.models import Priority
+
+# Load environment variables
+load_dotenv()
 
 st.set_page_config(
     page_title="Voice Todo App",
@@ -58,10 +62,20 @@ def get_services() -> tuple:
     # Data layer
     repository = TaskRepository()
     
+    # Get API keys from environment
+    deepgram_key = os.getenv("DEEPGRAM_API_KEY")
+    openai_key = os.getenv("OPENAI_API_KEY")
+    
+    # Validate API keys exist
+    if not deepgram_key:
+        raise ValueError("DEEPGRAM_API_KEY not found in environment variables")
+    if not openai_key:
+        raise ValueError("OPENAI_API_KEY not found in environment variables")
+    
     # Service layer
     task_service = TaskService(repository)
-    audio_service = AudioService(api_key=st.secrets["DEEPGRAM_API_KEY"])
-    llm_service = LLMService(api_key=st.secrets["OPENAI_API_KEY"])
+    audio_service = AudioService(api_key=deepgram_key)
+    llm_service = LLMService(api_key=openai_key)
     
     return task_service, audio_service, llm_service
 
