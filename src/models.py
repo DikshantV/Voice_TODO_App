@@ -1,4 +1,3 @@
-# src/models.py
 """
 Data models for voice-first to-do list application.
 
